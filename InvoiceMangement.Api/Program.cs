@@ -16,8 +16,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddScoped<IInvoiceHeaderRepository, InvoiceHeaderRepository>();
-builder.Services.AddScoped<IInvoiceLineItemRepository, InvoiceLineItemRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IInvoiceDetailsRepository, InvoiceDetailsRepository>();
 
 
 
