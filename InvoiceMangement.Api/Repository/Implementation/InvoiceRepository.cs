@@ -35,7 +35,42 @@
 
         public async Task UpdateAsync(Invoice invoice)
         {
-            _context.Entry(invoice).State = EntityState.Modified;
+            var existingInvoice = await _context.Invoices
+                                                 .Include(i => i.InvoiceDetails)
+                                                 .FirstOrDefaultAsync(i => i.InvoiceID == invoice.InvoiceID);
+
+            if (existingInvoice == null)
+            {
+                throw new Exception("Invoice not found");
+            }
+
+            // Update the invoice
+            _context.Entry(existingInvoice).CurrentValues.SetValues(invoice);
+
+            // Handle line items
+            foreach (var existingDetail in existingInvoice.InvoiceDetails.ToList())
+            {
+                if (!invoice.InvoiceDetails.Any(d => d.DetailID == existingDetail.DetailID))
+                {
+                    _context.InvoiceDetails.Remove(existingDetail);
+                }
+            }
+
+            foreach (var detail in invoice.InvoiceDetails)
+            {
+                var existingDetail = existingInvoice.InvoiceDetails
+                                                    .FirstOrDefault(d => d.DetailID == detail.DetailID);
+
+                if (existingDetail != null)
+                {
+                    _context.Entry(existingDetail).CurrentValues.SetValues(detail);
+                }
+                else
+                {
+                    existingInvoice.InvoiceDetails.Add(detail);
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
 

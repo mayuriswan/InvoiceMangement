@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\InvoiceMangement.Api\InvoiceMangement.Api.csproj" />
+  </ItemGroup>
+
 </Project>

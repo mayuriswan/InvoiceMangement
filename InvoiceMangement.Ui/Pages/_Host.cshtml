@@ -13,6 +13,8 @@
     <link href="css/site.css" rel="stylesheet" />
     <link href="InvoiceMangement.Ui.styles.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
@@ -28,6 +30,15 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+    <script>
+        window.ShowDeleteConfirmationModal = () => {
+            $('#deleteConfirmationModal').modal('show');
+        };
+
+        window.HideDeleteConfirmationModal = () => {
+            $('#deleteConfirmationModal').modal('hide');
+        };
+    </script>
 
     <script src="_framework/blazor.server.js"></script>
 </body>

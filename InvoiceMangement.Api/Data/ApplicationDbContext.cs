@@ -29,9 +29,7 @@ namespace InvoiceMangement.Api.Data
                 entity.Property(e => e.UnitPrice).HasColumnType("money");
                 entity.Property(e => e.LineTotal).HasColumnType("money");
 
-                entity.HasOne(d => d.Invoice)
-                      .WithMany(p => p.InvoiceDetails)
-                      .HasForeignKey(d => d.InvoiceID);
+               
             });
         }
 

@@ -9,7 +9,6 @@
         public int Quantity { get; set; }
         public decimal LineTotal { get; set; }
 
-        // Navigation property
-        public Invoice Invoice { get; set; }
+   
     }
 }
