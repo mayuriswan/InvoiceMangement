@@ -1,4 +1,6 @@
 using InvoiceMangement.Ui.Data;
+using InvoiceMangement.Ui.Services.Implementation;
+using InvoiceMangement.Ui.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -8,6 +10,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddScoped(serviceProvider =>
+{
+    // Get base url from appsettings.json
+    var baseURL = Environment.GetEnvironmentVariable("BASE_URL") ?? builder.Configuration["BaseURL"];
+
+    // inject httpClient with baseURL
+    return new HttpClient { BaseAddress = new Uri(baseURL) };
+});
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IInvoiceDetailsService, InvoiceDetailsService>();
 
 var app = builder.Build();
 

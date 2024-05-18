@@ -11,6 +11,6 @@
         public DateTime CreatedDate { get; set; }
 
         // Navigation property
-        public ICollection<InvoiceDetails> InvoiceDetails { get; set; } = new List<InvoiceDetails>();
+        public List<InvoiceDetails> InvoiceDetails { get; set; } = new List<InvoiceDetails>();
     }
 }
