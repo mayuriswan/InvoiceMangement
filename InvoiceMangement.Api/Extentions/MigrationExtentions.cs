@@ -13,6 +13,8 @@ namespace InvoiceMangement.Api.Extentions
             dbContext.Database.Migrate();
             dbContext.Seed();
 
+            // Test
+
         }
     }
 }
