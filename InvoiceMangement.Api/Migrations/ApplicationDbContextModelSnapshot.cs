@@ -22,6 +22,29 @@ namespace InvoiceMangement.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("InvoiceMangement.Api.Models.Category", b =>
+                {
+                    b.Property<int>("CategoryID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryID"));
+
+                    b.Property<string>("CategoryCode")
+                        .IsRequired()
+                        .HasColumnType("nchar(10)")
+                        .HasColumnName("CategoryCode");
+
+                    b.Property<string>("CategoryDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("CategoryDescription");
+
+                    b.HasKey("CategoryID");
+
+                    b.ToTable("Category", "dbo");
+                });
+
             modelBuilder.Entity("InvoiceMangement.Api.Models.Invoice", b =>
                 {
                     b.Property<int>("InvoiceID")
@@ -29,6 +52,9 @@ namespace InvoiceMangement.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceID"));
+
+                    b.Property<int>("CategoryID")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -51,6 +77,8 @@ namespace InvoiceMangement.Api.Migrations
                         .HasColumnType("money");
 
                     b.HasKey("InvoiceID");
+
+                    b.HasIndex("CategoryID");
 
                     b.ToTable("Invoices");
                 });
@@ -86,15 +114,27 @@ namespace InvoiceMangement.Api.Migrations
                     b.ToTable("InvoiceDetails");
                 });
 
+            modelBuilder.Entity("InvoiceMangement.Api.Models.Invoice", b =>
+                {
+                    b.HasOne("InvoiceMangement.Api.Models.Category", null)
+                        .WithMany("Invoices")
+                        .HasForeignKey("CategoryID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("InvoiceMangement.Api.Models.InvoiceDetails", b =>
                 {
-                    b.HasOne("InvoiceMangement.Api.Models.Invoice", "Invoice")
+                    b.HasOne("InvoiceMangement.Api.Models.Invoice", null)
                         .WithMany("InvoiceDetails")
                         .HasForeignKey("InvoiceID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
 
-                    b.Navigation("Invoice");
+            modelBuilder.Entity("InvoiceMangement.Api.Models.Category", b =>
+                {
+                    b.Navigation("Invoices");
                 });
 
             modelBuilder.Entity("InvoiceMangement.Api.Models.Invoice", b =>

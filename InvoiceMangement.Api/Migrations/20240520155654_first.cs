@@ -6,16 +6,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace InvoiceMangement.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class second : Migration
+    public partial class first : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "InvoiceLineItems");
+            migrationBuilder.EnsureSchema(
+                name: "dbo");
 
-            migrationBuilder.DropTable(
-                name: "InvoiceHeaders");
+            migrationBuilder.CreateTable(
+                name: "Category",
+                schema: "dbo",
+                columns: table => new
+                {
+                    CategoryID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CategoryCode = table.Column<string>(type: "nchar(10)", nullable: false),
+                    CategoryDescription = table.Column<string>(type: "nvarchar(50)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Category", x => x.CategoryID);
+                });
 
             migrationBuilder.CreateTable(
                 name: "Invoices",
@@ -23,6 +35,7 @@ namespace InvoiceMangement.Api.Migrations
                 {
                     InvoiceID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    CategoryID = table.Column<int>(type: "int", nullable: false),
                     InvoiceNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     InvoiceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CustomerID = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -33,6 +46,13 @@ namespace InvoiceMangement.Api.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Invoices", x => x.InvoiceID);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Category_CategoryID",
+                        column: x => x.CategoryID,
+                        principalSchema: "dbo",
+                        principalTable: "Category",
+                        principalColumn: "CategoryID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -62,6 +82,11 @@ namespace InvoiceMangement.Api.Migrations
                 name: "IX_InvoiceDetails_InvoiceID",
                 table: "InvoiceDetails",
                 column: "InvoiceID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_CategoryID",
+                table: "Invoices",
+                column: "CategoryID");
         }
 
         /// <inheritdoc />
@@ -73,47 +98,9 @@ namespace InvoiceMangement.Api.Migrations
             migrationBuilder.DropTable(
                 name: "Invoices");
 
-            migrationBuilder.CreateTable(
-                name: "InvoiceHeaders",
-                columns: table => new
-                {
-                    InvoiceHeaderId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    InvoiceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    InvoiceNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InvoiceHeaders", x => x.InvoiceHeaderId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "InvoiceLineItems",
-                columns: table => new
-                {
-                    InvoiceLineItemId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    InvoiceHeaderId = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InvoiceLineItems", x => x.InvoiceLineItemId);
-                    table.ForeignKey(
-                        name: "FK_InvoiceLineItems_InvoiceHeaders_InvoiceHeaderId",
-                        column: x => x.InvoiceHeaderId,
-                        principalTable: "InvoiceHeaders",
-                        principalColumn: "InvoiceHeaderId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InvoiceLineItems_InvoiceHeaderId",
-                table: "InvoiceLineItems",
-                column: "InvoiceHeaderId");
+            migrationBuilder.DropTable(
+                name: "Category",
+                schema: "dbo");
         }
     }
 }

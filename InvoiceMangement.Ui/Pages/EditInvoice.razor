@@ -2,6 +2,8 @@
 @inject IInvoiceService InvoiceService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@using MudBlazor
 
 <h3 class="text-center text-white bg-primary p-2">INVOICE</h3>
 
@@ -81,7 +83,8 @@
                                             <InputNumber class="form-control" @bind-Value="detail.Quantity" />
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger" @onclick="() => RemoveInvoiceDetail(detail)">Remove</button>
+                                            <button class="btn btn-secondary mr-2" @onclick="() => PopUpInvoiceDetailAddEditDelete(detail)">Edit</button>
+                                            <button type="button" class="btn btn-danger" @onclick="() => PopUpInvoiceDetailAddEditDelete(detail)">Remove</button>
                                         </td>
                                     </tr>
                                 }
@@ -91,7 +94,7 @@
 
                     <div class="form-row mt-3 button-row">
                         <div class="col-md-6">
-                            <button type="button" class="btn btn-primary mb-1" @onclick="AddInvoiceDetail">+</button>
+                            <button type="button" class="btn btn-primary mb-1" @onclick="() => PopUpInvoiceDetailAddEditDelete(new())">+</button>
                         </div>
                         <div class="col-md-6 text-right">
                             <button type="submit" class="btn btn-primary">Update Invoice</button>
@@ -106,9 +109,48 @@
                     </div>
                 </div>
             }
+
         </div>
     </div>
 </div>
+
+<!-- Modal PopUp InvoiceDetails-->
+<div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Invoice # @invoice.InvoiceNumber</h5>
+                <button type="button" class="close btn-danger" data-dismiss="modal" aria-label="Close" @onclick="HideModal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@invoice">
+                    <div class="form-group">
+                        <label for="itemNumber">Item #</label>
+                        <InputText id="itemNumber" class="form-control" @bind-Value="detail.ProductID" />
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <InputNumber id="quantity" class="form-control" @bind-Value="detail.Quantity" />
+                    </div>
+                    <div class="form-group">
+                        <label for="unitPrice">Unit Price</label>
+                        <InputNumber id="unitPrice" class="form-control" @bind-Value="detail.UnitPrice" />
+                    </div>
+                </EditForm>
+            </div>
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" class="btn btn-secondary" @onclick="HideModal">Close</button>
+                <button type="button" class="btn btn-primary" @onclick="HideModal">Add</button>
+                <button type="button" class="btn btn-secondary" @onclick="HideModal">Cancel</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="HideModal">Delete</button>
+            </div>
+        </div>
+    </div>
+</div> 
+
+
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
@@ -134,6 +176,8 @@
     public int InvoiceId { get; set; }
 
     private Invoice invoice = new Invoice();
+    private InvoiceDetails detail = new();
+    private bool isOpen = true;
     private bool isLoading = true;
     private bool hasError = false;
     private string errorMessage = string.Empty;
@@ -155,15 +199,20 @@
         }
     }
 
-    private void AddInvoiceDetail()
+
+    private async Task PopUpInvoiceDetailAddEditDelete(InvoiceDetails detail)
     {
-        invoice.InvoiceDetails.Add(new InvoiceDetails());
+        this.detail = detail;
+        await JSRuntime.InvokeVoidAsync("ShowInvoiceDetailPopUp");
     }
 
-    private void RemoveInvoiceDetail(InvoiceDetails detail)
+    private async Task HideModal()
     {
-        invoice.InvoiceDetails.Remove(detail);
+        //await JSRuntime.InvokeVoidAsync("ShowInvoiceDetailModal");
     }
+
+
+
 
     private async Task HandleValidSubmit()
     {
@@ -172,7 +221,7 @@
             detail.LineTotal = detail.UnitPrice * detail.Quantity;
         }
         await InvoiceService.UpdateInvoiceAsync(invoice);
-        NavigationManager.NavigateTo("/invoices");
+        //NavigationManager.NavigateTo("/invoices");
     }
 
     private async Task DeleteInvoice()

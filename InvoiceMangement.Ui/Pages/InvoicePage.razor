@@ -20,6 +20,7 @@ else
                 <th>Invoice Number</th>
                 <th>Invoice Date</th>
                 <th>Customer ID</th>
+                <th>Category</th>
                 <th>Total Amount</th>
                 <th>Payment Due Date</th>
                 <th>Created Date</th>
@@ -33,6 +34,7 @@ else
                     <td>@invoice.InvoiceNumber</td>
                     <td>@invoice.InvoiceDate.ToShortDateString()</td>
                     <td>@invoice.CustomerID</td>
+                    <td>@invoice.Category.CategoryDescription</td>
                     <td>@invoice.TotalAmount</td>
                     <td>@invoice.PaymentDueDate.ToShortDateString()</td>
                     <td>@invoice.CreatedDate.ToShortDateString()</td>
