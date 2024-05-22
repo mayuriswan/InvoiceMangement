@@ -1,3 +1,5 @@
+using InvoiceMangement.Api.Repository.Implementation;
+using InvoiceMangement.Api.Repository.Interface;
 using InvoiceMangement.Ui;
 using InvoiceMangement.Ui.Services.Implementation;
 using InvoiceMangement.Ui.Services.Interfaces;
@@ -22,6 +24,8 @@ builder.Services.AddScoped(serviceProvider =>
 });
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInvoiceDetailsService, InvoiceDetailsService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 
 var app = builder.Build();
 

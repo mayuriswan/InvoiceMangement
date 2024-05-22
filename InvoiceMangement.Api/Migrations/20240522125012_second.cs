@@ -6,17 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace InvoiceMangement.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class first : Migration
+    public partial class second : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "dbo");
-
             migrationBuilder.CreateTable(
-                name: "Category",
-                schema: "dbo",
+                name: "Categories",
                 columns: table => new
                 {
                     CategoryID = table.Column<int>(type: "int", nullable: false)
@@ -26,7 +22,7 @@ namespace InvoiceMangement.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Category", x => x.CategoryID);
+                    table.PrimaryKey("PK_Categories", x => x.CategoryID);
                 });
 
             migrationBuilder.CreateTable(
@@ -47,12 +43,11 @@ namespace InvoiceMangement.Api.Migrations
                 {
                     table.PrimaryKey("PK_Invoices", x => x.InvoiceID);
                     table.ForeignKey(
-                        name: "FK_Invoices_Category_CategoryID",
+                        name: "FK_Invoices_Categories_CategoryID",
                         column: x => x.CategoryID,
-                        principalSchema: "dbo",
-                        principalTable: "Category",
+                        principalTable: "Categories",
                         principalColumn: "CategoryID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -99,8 +94,7 @@ namespace InvoiceMangement.Api.Migrations
                 name: "Invoices");
 
             migrationBuilder.DropTable(
-                name: "Category",
-                schema: "dbo");
+                name: "Categories");
         }
     }
 }

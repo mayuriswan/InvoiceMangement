@@ -19,16 +19,19 @@
 
         public async Task<IEnumerable<Invoice>> GetAllAsync()
         {
-            return await _context.Invoices.Include(i => i.InvoiceDetails).ToListAsync();
+            var invoices = await _context.Invoices
+                .Include(i=>i.Category).Include(i => i.InvoiceDetails).ToListAsync();
+            return invoices; 
         }
 
         public async Task<Invoice> GetByIdAsync(int id)
         {
-            return await _context.Invoices.Include(i => i.InvoiceDetails).FirstOrDefaultAsync(i => i.InvoiceID == id);
+            return await _context.Invoices.Include(i=>i.Category).Include(i => i.InvoiceDetails).FirstOrDefaultAsync(i => i.InvoiceID == id);
         }
 
         public async Task AddAsync(Invoice invoice)
         {
+            invoice.Category = null;
             _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync();
         }
@@ -36,6 +39,7 @@
         public async Task UpdateAsync(Invoice invoice)
         {
             var existingInvoice = await _context.Invoices
+                                                 .Include(i => i.Category)
                                                  .Include(i => i.InvoiceDetails)
                                                  .FirstOrDefaultAsync(i => i.InvoiceID == invoice.InvoiceID);
 
@@ -44,8 +48,19 @@
                 throw new Exception("Invoice not found");
             }
 
-            // Update the invoice
+            // Update the invoice fields
             _context.Entry(existingInvoice).CurrentValues.SetValues(invoice);
+
+            // Update the category if it has changed
+            if (existingInvoice.CategoryID != invoice.CategoryID)
+            {
+                existingInvoice.CategoryID = invoice.CategoryID;
+                var newCategory = await _context.Categories.FindAsync(invoice.CategoryID);
+                if (newCategory != null)
+                {
+                    existingInvoice.Category = newCategory;
+                }
+            }
 
             // Handle line items
             foreach (var existingDetail in existingInvoice.InvoiceDetails.ToList())

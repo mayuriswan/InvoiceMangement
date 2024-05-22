@@ -32,17 +32,15 @@ namespace InvoiceMangement.Api.Migrations
 
                     b.Property<string>("CategoryCode")
                         .IsRequired()
-                        .HasColumnType("nchar(10)")
-                        .HasColumnName("CategoryCode");
+                        .HasColumnType("nchar(10)");
 
                     b.Property<string>("CategoryDescription")
                         .IsRequired()
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("CategoryDescription");
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("CategoryID");
 
-                    b.ToTable("Category", "dbo");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("InvoiceMangement.Api.Models.Invoice", b =>
@@ -116,11 +114,13 @@ namespace InvoiceMangement.Api.Migrations
 
             modelBuilder.Entity("InvoiceMangement.Api.Models.Invoice", b =>
                 {
-                    b.HasOne("InvoiceMangement.Api.Models.Category", null)
+                    b.HasOne("InvoiceMangement.Api.Models.Category", "Category")
                         .WithMany("Invoices")
                         .HasForeignKey("CategoryID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("InvoiceMangement.Api.Models.InvoiceDetails", b =>

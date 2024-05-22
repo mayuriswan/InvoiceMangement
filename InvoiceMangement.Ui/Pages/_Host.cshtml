@@ -30,17 +30,24 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    <script>
-        window.ShowInvoiceDetailPopUp = () => {
+    
+      <script>
+        function ShowInvoiceDetailModal() {
             $('#invoiceDetailModal').modal('show');
-        };
-        window.ShowDeleteConfirmationModal = () => {
-            $('#deleteConfirmationModal').modal('show');
-        };
+        }
 
-        window.HideDeleteConfirmationModal = () => {
+        function HideInvoiceDetailModal() {
+            $('#invoiceDetailModal').modal('hide');
+        }
+
+        function ShowDeleteConfirmationModal() {
+            $('#deleteConfirmationModal').modal('show');
+        }
+
+        function HideDeleteConfirmationModal() {
             $('#deleteConfirmationModal').modal('hide');
-        };
+        }
+  
     </script>
 
     <script src="_framework/blazor.server.js"></script>

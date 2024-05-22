@@ -22,14 +22,30 @@ namespace InvoiceMangement.Ui.Services.Implementation
             return await _httpClient.GetFromJsonAsync<Invoice>($"api/invoice/{id}");
         }
 
-        public async Task AddInvoiceAsync(Invoice invoice)
-        {
-            await _httpClient.PostAsJsonAsync("api/invoice", invoice);
+            public async Task AddInvoiceAsync(Invoice invoice)
+            {
+            var response = await _httpClient.PostAsJsonAsync("api/invoice", invoice);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // The request was successful.
+                // You can log the success or return from the method if needed.
+                return;
+            }
+            else
+            {
+                // The request failed.
+                // Read the error details from the response.
+                var errorContent = await response.Content.ReadAsStringAsync();
+
+                // You can log the error content, throw an exception, or handle it as needed.
+                throw new ApplicationException($"Error adding invoice: {errorContent}");
+            }
         }
 
         public async Task UpdateInvoiceAsync(Invoice invoice)
         {
-            await _httpClient.PutAsJsonAsync($"api/invoice/{invoice.InvoiceID}", invoice);
+           var reponse =  await _httpClient.PutAsJsonAsync($"api/invoice/{invoice.InvoiceID}", invoice);
         }
 
         public async Task DeleteInvoiceAsync(int id)
