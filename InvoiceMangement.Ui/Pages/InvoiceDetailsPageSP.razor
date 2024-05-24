@@ -1,0 +1,194 @@
+﻿@page "/invoice-details-SP/{invoiceNumber}/{invoiceDate}"
+@inject IInvoiceService InvoiceService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ICategoryService CategoryService
+
+@using System.Globalization
+
+<h3 class="text-center text-white bg-primary p-2">Invoice Details</h3>
+
+<div class="container mt-4">
+    <div class="invoice-card">
+        <div class="invoice-card-body">
+            @if (isLoading)
+            {
+                <p><em>Loading...</em></p>
+            }
+            else if (hasError)
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+            else
+            {
+                <div>
+                    <h4 class="section-title">Invoice Details</h4>
+                    <p><strong>Invoice Number:</strong> @invoice.InvoiceNumber</p>
+                    <p><strong>Invoice Date:</strong> @invoice.InvoiceDate.ToShortDateString()</p>
+                    <p><strong>Customer ID:</strong> @invoice.CustomerID</p>
+                    <p><strong>Total Amount:</strong> @invoice.TotalAmount</p>
+                    <p><strong>Payment Due Date:</strong> @invoice.PaymentDueDate.ToShortDateString()</p>
+                    <p><strong>Created Date:</strong> @invoice.CreatedDate.ToShortDateString()</p>
+                    <p><strong>CategoryCode</strong> @invoice.Category.CategoryCode</p>
+
+
+                    <div class="border-divider"></div>
+
+                    <h4 class="section-title">Items Details</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Item No</th>
+                                    <th>Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in invoice.InvoiceDetails)
+                                {
+                                    <tr>
+                                        <td>@detail.ProductID</td>
+                                        <td>@detail.UnitPrice</td>
+                                        <td>@detail.Quantity</td>
+                                        <td>@(detail.UnitPrice * detail.Quantity)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <button class="btn btn-secondary" @onclick="BackToList">Back to List</button>
+                        <button class="btn btn-primary" @onclick="EditInvoice">Edit Invoice</button>
+                        <button class="btn btn-danger" @onclick="ShowDeleteConfirmation">Delete Invoice</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this invoice?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="HideDeleteConfirmation">Cancel</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string InvoiceNumber { get; set; }
+
+    [Parameter]
+    public string InvoiceDate { get; set; }
+
+    private Invoice invoice = new Invoice();
+    private bool isLoading = true;
+    private bool hasError = false;
+    private List<Category> catorgries;
+
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            catorgries = await CategoryService.GetCategoriesAsync();
+            DateTime invoiceDate = DateTime.ParseExact(InvoiceDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            invoice = await InvoiceService.GetInvoiceByStoredProcedureAsync(InvoiceNumber, invoiceDate);
+            invoice.Category = catorgries.Where(i => i.CategoryID == invoice.CategoryID).FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void BackToList()
+    {
+        NavigationManager.NavigateTo("/invoicesSp");
+    }
+
+    private void EditInvoice()
+    {
+        NavigationManager.NavigateTo($"/edit-invoice/{invoice.InvoiceID}");
+    }
+
+    private async Task DeleteInvoice()
+    {
+        await InvoiceService.DeleteInvoiceAsync(invoice.InvoiceID);
+        NavigationManager.NavigateTo("/invoicesSp");
+    }
+
+    private async Task ShowDeleteConfirmation()
+    {
+        await JSRuntime.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    private async Task HideDeleteConfirmation()
+    {
+        await JSRuntime.InvokeVoidAsync("HideDeleteConfirmationModal");
+    }
+
+    private async Task ConfirmDelete()
+    {
+        await DeleteInvoice();
+        await JSRuntime.InvokeVoidAsync("HideDeleteConfirmationModal");
+    }
+}
+
+<style>
+    .container {
+        max-width: 900px;
+    }
+
+    .invoice-card {
+        border: 1px solid #007bff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .invoice-card-body {
+        padding: 20px;
+    }
+
+    .section-title {
+        margin-bottom: 20px;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .border-divider {
+        border-top: 2px solid #007bff;
+        margin: 20px 0;
+    }
+
+    .table-bordered {
+        border: 1px solid #007bff;
+    }
+
+        .table-bordered th,
+        .table-bordered td {
+            border: 1px solid #007bff;
+        }
+</style>

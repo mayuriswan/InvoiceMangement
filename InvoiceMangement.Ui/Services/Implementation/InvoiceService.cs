@@ -52,5 +52,10 @@ namespace InvoiceMangement.Ui.Services.Implementation
         {
             await _httpClient.DeleteAsync($"api/invoice/{id}");
         }
+        public async Task<Invoice> GetInvoiceByStoredProcedureAsync(string invoiceNumber, DateTime invoiceDate)
+        {
+            var response = await _httpClient.GetFromJsonAsync<Invoice>($"api/invoice/byInvoiceNumber?invoiceNumber={invoiceNumber}&invoiceDate={invoiceDate:yyyy-MM-dd}");
+            return response;
+        }
     }
 }

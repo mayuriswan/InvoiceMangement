@@ -1,4 +1,5 @@
 ﻿using InvoiceMangement.Api.Models;
+using InvoiceMangement.Api.Repository.Implementation;
 using InvoiceMangement.Api.Repository.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +17,15 @@ namespace InvoiceMangement.Api.Controllers
             _repository = repository;
         }
 
+        // Get all invoices
         [HttpGet]
         public async Task<IEnumerable<Invoice>> Get()
         {
             return await _repository.GetAllAsync();
         }
 
-        [HttpGet("{id}")]
+        // Get invoice by ID
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<Invoice>> Get(int id)
         {
             var invoice = await _repository.GetByIdAsync(id);
@@ -33,6 +36,20 @@ namespace InvoiceMangement.Api.Controllers
             return invoice;
         }
 
+        // Get invoice by invoice number and date
+        [HttpGet("byInvoiceNumber")]
+        public async Task<IActionResult> GetInvoice(string invoiceNumber, DateTime invoiceDate)
+        {
+
+            var invoice = await _repository.GetInvoiceAsync(invoiceNumber, invoiceDate);
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+            return Ok(invoice);
+        }
+
+        // Create a new invoice
         [HttpPost]
         public async Task<ActionResult<Invoice>> Post(Invoice invoice)
         {
@@ -40,7 +57,8 @@ namespace InvoiceMangement.Api.Controllers
             return CreatedAtAction(nameof(Get), new { id = invoice.InvoiceID }, invoice);
         }
 
-        [HttpPut("{id}")]
+        // Update an existing invoice
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, Invoice invoice)
         {
             if (id != invoice.InvoiceID)
@@ -51,11 +69,13 @@ namespace InvoiceMangement.Api.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        // Delete an invoice
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _repository.DeleteAsync(id);
             return NoContent();
         }
     }
+
 }

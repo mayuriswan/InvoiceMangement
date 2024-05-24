@@ -9,5 +9,6 @@ namespace InvoiceMangement.Api.Repository.Interface
         Task AddAsync(Invoice invoice);
         Task UpdateAsync(Invoice invoice);
         Task DeleteAsync(int id);
+        Task<Invoice> GetInvoiceAsync(string invoiceNumber, DateTime invoiceDate);
     }
 }

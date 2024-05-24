@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using InvoiceMangement.Api.Migrations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InvoiceMangement.Api.Models
 {
@@ -12,7 +13,7 @@ namespace InvoiceMangement.Api.Models
         public decimal TotalAmount { get; set; }
         public DateTime PaymentDueDate { get; set; }
         public DateTime CreatedDate { get; set; }
-        public Category Category { get; set; } = new Category(); // Navigation property
+        public Category Category { get; set; } 
 
         // Navigation property
         public List<InvoiceDetails> InvoiceDetails { get; set; } = new List<InvoiceDetails>();

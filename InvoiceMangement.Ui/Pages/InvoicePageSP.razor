@@ -1,0 +1,157 @@
+﻿@page "/invoicesSp"
+@using InvoiceMangement.Ui.Services.Interfaces
+@inject IInvoiceService InvoiceService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<h3>Invoices</h3>
+
+<div class="d-flex justify-content-between mb-3">
+    <div class="input-group search-bar">
+        <input type="text" class="form-control" placeholder="Search invoices..." @bind="searchTerm" @oninput="SearchInvoices" />
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+    </div>
+</div>
+
+@if (filteredInvoices == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Invoice Number</th>
+                <th>Invoice Date</th>
+                <th>Customer ID</th>
+                <th>Category</th>
+                <th>Total Amount</th>
+                <th>Payment Due Date</th>
+                <th>Created Date</th>*
+
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invoice in filteredInvoices)
+            {
+                <tr>
+                    <td>@invoice.InvoiceNumber</td>
+                    <td>@invoice.InvoiceDate.ToShortDateString()</td>
+                    <td>@invoice.CustomerID</td>
+                    <td>@invoice?.Category?.CategoryDescription</td>
+                    <td>@invoice.TotalAmount</td>
+                    <td>@invoice.PaymentDueDate.ToShortDateString()</td>
+                    <td>@invoice.CreatedDate.ToShortDateString()</td>
+                    <td>
+                        <button class="btn btn-info mr-2" @onclick="() => ViewInvoiceDetails(invoice.InvoiceNumber, invoice.InvoiceDate)">View</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this invoice?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="HideDeleteConfirmation">Cancel</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IEnumerable<Invoice> invoices;
+    private IEnumerable<Invoice> filteredInvoices;
+    private int invoiceIdToDelete;
+    private string searchTerm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInvoices();
+    }
+
+    private async Task LoadInvoices()
+    {
+        invoices = await InvoiceService.GetAllInvoicesAsync();
+        filteredInvoices = invoices;
+    }
+
+    private void CreateInvoice()
+    {
+        NavigationManager.NavigateTo("/create-invoice");
+    }
+
+    private void EditInvoice(int invoiceId)
+    {
+        NavigationManager.NavigateTo($"/edit-invoice/{invoiceId}");
+    }
+
+    private void ViewInvoiceDetails(string invoiceNumber, DateTime invoiceDate)
+    {
+        var invoiceDateParam = invoiceDate.ToString("yyyy-MM-dd");
+        NavigationManager.NavigateTo($"/invoice-details-SP/{invoiceNumber}/{invoiceDateParam}");
+    }
+
+    private async Task DeleteInvoice(int invoiceId)
+    {
+        await InvoiceService.DeleteInvoiceAsync(invoiceId);
+        await LoadInvoices();
+    }
+
+    private async Task ShowDeleteConfirmation(int invoiceId)
+    {
+        invoiceIdToDelete = invoiceId;
+        await JSRuntime.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    private async Task HideDeleteConfirmation()
+    {
+        await JSRuntime.InvokeVoidAsync("HideDeleteConfirmationModal");
+    }
+
+    private async Task ConfirmDelete()
+    {
+        await DeleteInvoice(invoiceIdToDelete);
+        await JSRuntime.InvokeVoidAsync("HideDeleteConfirmationModal");
+    }
+
+    private void SearchInvoices(ChangeEventArgs e)
+    {
+        searchTerm = e.Value.ToString();
+        filteredInvoices = invoices.Where(i =>
+            i.InvoiceNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            i.CustomerID.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            (i.Category != null && i.Category.CategoryDescription.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+    }
+}
+
+<style>
+    .search-bar {
+        width: 300px;
+    }
+
+    .input-group-text {
+        background-color: #ffffff;
+    }
+
+    .input-group .form-control {
+        border-right: 0;
+    }
+
+    .input-group .input-group-text {
+        border-left: 0;
+    }
+</style>

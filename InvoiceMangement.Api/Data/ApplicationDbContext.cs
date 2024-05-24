@@ -24,8 +24,6 @@ namespace InvoiceMangement.Api.Data
             {
                 entity.HasKey(e => e.InvoiceID);
                 entity.Property(e => e.TotalAmount).HasColumnType("money");
-
-              
             });
 
             modelBuilder.Entity<InvoiceDetails>(entity =>
@@ -38,7 +36,9 @@ namespace InvoiceMangement.Api.Data
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.HasKey(e => e.CategoryID);
-                entity.Property(e => e.CategoryCode).HasColumnType("nchar(10)");
+                entity.Property(e => e.CategoryCode)
+                      .HasColumnType("nchar(10)")
+                      .IsRequired(); // Ensure CategoryCode is required
                 entity.Property(e => e.CategoryDescription).HasColumnType("nvarchar(50)");
             });
         }
@@ -95,6 +95,15 @@ namespace InvoiceMangement.Api.Data
                     new Category { CategoryCode = "PC        ", CategoryDescription = "Desktops" },
                     new Category { CategoryCode = "Laptops   ", CategoryDescription = "Laptops" }
                 };
+
+                // Validate that no category code is null
+                foreach (var category in categories)
+                {
+                    if (string.IsNullOrWhiteSpace(category.CategoryCode))
+                    {
+                        throw new InvalidOperationException("CategoryCode cannot be null or empty");
+                    }
+                }
 
                 // Add categories to the context
                 Categories.AddRange(categories);
@@ -173,6 +182,5 @@ namespace InvoiceMangement.Api.Data
                 SaveChanges(); // Finally save the invoice details
             }
         }
-    
     }
 }

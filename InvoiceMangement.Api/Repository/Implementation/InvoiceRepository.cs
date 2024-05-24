@@ -3,9 +3,15 @@
     using InvoiceMangement.Api.Data;
     using InvoiceMangement.Api.Models;
     using InvoiceMangement.Api.Repository.Interface;
+    using Microsoft.Data.SqlClient;
     // Repositories/InvoiceHeaderRepository.cs
     using Microsoft.EntityFrameworkCore;
     using System.Collections.Generic;
+    using System.Data;
+    using System.Text.Json;
+    using System.Text.Json.Nodes;
+    using System.Text.Json.Serialization;
+
     using System.Threading.Tasks;
 
     public class InvoiceRepository : IInvoiceRepository
@@ -35,6 +41,54 @@
             _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync();
         }
+        public async Task<Invoice> GetInvoiceAsync(string invoiceNumber, DateTime invoiceDate)
+        {
+            var parameterInvoiceNumber = new SqlParameter("@InvoiceNumber", SqlDbType.NVarChar, 50) { Value = invoiceNumber ?? (object)DBNull.Value };
+            var parameterInvoiceDate = new SqlParameter("@InvoiceDate", SqlDbType.Date) { Value = invoiceDate == default ? (object)DBNull.Value : invoiceDate };
+
+            var commandText = "EXEC [dbo].[GetInvoice] @InvoiceNumber, @InvoiceDate";
+
+            using (var command = _context.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = commandText;
+                command.Parameters.Add(parameterInvoiceNumber);
+                command.Parameters.Add(parameterInvoiceDate);
+
+                _context.Database.OpenConnection();
+
+                using (var result = await command.ExecuteReaderAsync())
+                {
+                    if (await result.ReadAsync())
+                    {
+                        var jsonResult = result.GetString(0);
+
+                        // Print the JSON result for inspection
+                        Console.WriteLine(jsonResult);
+
+                        // Parse the JSON result using JsonNode for manual processing
+                        var jsonObject = JsonNode.Parse(jsonResult);
+                        var invoiceArray = jsonObject?["Invoice"]?.AsArray();
+                        if (invoiceArray == null || !invoiceArray.Any())
+                        {
+                            return null;
+                        }
+
+                        // Deserialize the first element of the array to Invoice
+                        var invoiceJson = invoiceArray[0].ToJsonString();
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        };
+
+                        var invoice = JsonSerializer.Deserialize<Invoice>(invoiceJson, options);
+                        return invoice;
+                    }
+                }
+            }
+
+            return null;
+        }
+
 
         public async Task UpdateAsync(Invoice invoice)
         {

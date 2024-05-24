@@ -9,5 +9,6 @@ namespace InvoiceMangement.Ui.Services.Interfaces
         Task AddInvoiceAsync(Invoice invoice);
         Task UpdateInvoiceAsync(Invoice invoice);
         Task DeleteInvoiceAsync(int id);
+        Task<Invoice> GetInvoiceByStoredProcedureAsync(string invoiceNumber, DateTime invoiceDate);
     }
 }

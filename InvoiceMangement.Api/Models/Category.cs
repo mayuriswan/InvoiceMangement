@@ -9,8 +9,8 @@ namespace InvoiceMangement.Api.Models
     {
         public int CategoryID { get; set; }
 
-        
-        public string CategoryCode { get; set; }
+
+        public string CategoryCode { get; set; } = "";
 
         public string CategoryDescription { get; set; }
 
