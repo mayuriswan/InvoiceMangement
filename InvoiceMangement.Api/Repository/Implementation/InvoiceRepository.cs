@@ -142,6 +142,23 @@
 
             await _context.SaveChangesAsync();
         }
+        public async Task SaveInvoiceAsync(Invoice invoice)
+        {
+            var invoiceJson = JsonSerializer.Serialize(new { Invoices = invoice });
+
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                await connection.OpenAsync();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SaveInvoice";
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.Add(new SqlParameter("@InvoiceJson", SqlDbType.NVarChar) { Value = invoiceJson });
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+        }
 
         public async Task DeleteAsync(int id)
         {

@@ -7,7 +7,10 @@
 <h3>Invoices</h3>
 
 <div class="d-flex justify-content-between mb-3">
+    <button class="btn btn-primary" @onclick="CreateInvoice">Create New Invoice</button>
+
     <div class="input-group search-bar">
+
         <input type="text" class="form-control" placeholder="Search invoices..." @bind="searchTerm" @oninput="SearchInvoices" />
         <span class="input-group-text"><i class="bi bi-search"></i></span>
     </div>
@@ -91,7 +94,7 @@ else
 
     private void CreateInvoice()
     {
-        NavigationManager.NavigateTo("/create-invoice");
+        NavigationManager.NavigateTo("/create-invoice-sp");
     }
 
     private void EditInvoice(int invoiceId)

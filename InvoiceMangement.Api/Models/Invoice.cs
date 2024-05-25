@@ -13,7 +13,7 @@ namespace InvoiceMangement.Api.Models
         public decimal TotalAmount { get; set; }
         public DateTime PaymentDueDate { get; set; }
         public DateTime CreatedDate { get; set; }
-        public Category Category { get; set; } 
+        public Category? Category { get; set; } = new Category();
 
         // Navigation property
         public List<InvoiceDetails> InvoiceDetails { get; set; } = new List<InvoiceDetails>();

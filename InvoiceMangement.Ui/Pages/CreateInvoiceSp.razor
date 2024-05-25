@@ -1,0 +1,313 @@
+﻿@page "/create-invoice-sp"
+@inject IInvoiceService InvoiceService
+@inject NavigationManager NavigationManager
+@inject ICategoryService CategoryService
+@inject IJSRuntime JSRuntime
+
+<h3 class="text-center text-white bg-primary p-2">CREATE INVOICE SP</h3>
+
+<div class="container mt-4">
+    <div class="invoice-card">
+        <div class="invoice-card-body">
+            @if (isLoading)
+            {
+                <p>Loading...</p>
+            }
+            else if (hasError)
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+            else
+            {
+                <EditForm Model="invoice" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <h4 class="section-title">Invoice Details</h4>
+                    <div class="form-row custom-form-row">
+                        <div class="form-group col-66">
+                            <label for="issuedPersonName">Issued Person Name</label>
+                            <InputText id="issuedPersonName" class="form-control" @bind-Value="invoice.CustomerID" />
+                        </div>
+                        <div class="form-group col-33">
+                            <label for="invoiceNumber">Invoice No</label>
+                            <InputText id="invoiceNumber" class="form-control" @bind-Value="invoice.InvoiceNumber" />
+                        </div>
+                    </div>
+
+                    <div class="form-row custom-form-row">
+                        <div class="form-group col-66">
+                            <label for="invoiceDate">Invoice Date</label>
+                            <InputDate id="invoiceDate" class="form-control" @bind-Value="invoice.InvoiceDate" />
+                        </div>
+                        <div class="form-group col-33">
+                            <label for="totalAmount">Total Amount</label>
+                            <InputNumber id="totalAmount" class="form-control" @bind-Value="invoice.TotalAmount" />
+                        </div>
+                    </div>
+
+                    <div class="form-row custom-form-row">
+                        <div class="form-group col-66">
+                            <label for="paymentDueDate">Payment Due Date</label>
+                            <InputDate id="paymentDueDate" class="form-control" @bind-Value="invoice.PaymentDueDate" />
+                        </div>
+                        <div class="form-group col-33">
+                            <label for="createdDate">Created Date</label>
+                            <InputDate id="createdDate" class="form-control" @bind-Value="invoice.CreatedDate" />
+                        </div>
+                    </div>
+
+                    <div class="form-row custom-form-row">
+                        <div class="form-group col-66">
+                            <label for="category">Category</label>
+                            <select id="category" class="form-control" @bind="invoice.CategoryID">
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category.CategoryID">@category.CategoryDescription</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="border-divider"></div>
+
+                    <h4 class="section-title">Items Details</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Item No</th>
+                                    <th>Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in invoice.InvoiceDetails)
+                                {
+                                    <tr>
+                                        <td><InputText class="form-control" @bind-Value="detail.ProductID" readonly /></td>
+                                        <td>
+                                            <InputNumber class="form-control" @bind-Value="detail.UnitPrice" readonly />
+                                        </td>
+                                        <td>
+                                            <InputNumber class="form-control" @bind-Value="detail.Quantity" readonly />
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-secondary mr-2 edit-btn" @onclick="() => EditInvoiceDetail(detail)">Edit</button>
+                                            <button type="button" class="btn btn-danger remove-btn" @onclick="() => RemoveInvoiceDetail(detail)">Remove</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="form-row mt-3 button-row">
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-primary mb-1" @onclick="AddNewInvoiceDetail">+</button>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <button type="submit" class="btn btn-primary">Add To Database</button>
+                            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                        </div>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal PopUp InvoiceDetails-->
+<div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Invoice Details</h5>
+                <button type="button" class="close btn-danger" data-dismiss="modal" aria-label="Close" @onclick="HideModal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@currentDetail">
+                    <div class="form-group">
+                        <label for="itemNumber">Item #</label>
+                        <InputText id="itemNumber" class="form-control" @bind-Value="currentDetail.ProductID" />
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <InputNumber id="quantity" class="form-control" @bind-Value="currentDetail.Quantity" />
+                    </div>
+                    <div class="form-group">
+                        <label for="unitPrice">Unit Price</label>
+                        <InputNumber id="unitPrice" class="form-control" @bind-Value="currentDetail.UnitPrice" />
+                    </div>
+                </EditForm>
+            </div>
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" class="btn btn-secondary" @onclick="HideModal">Close</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveDetail">Save</button>
+                <button type="button" class="btn btn-secondary" @onclick="HideModal">Cancel</button>
+                <button type="button" class="btn btn-danger" @onclick="DeleteDetail">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Invoice invoice = new Invoice
+        {
+            InvoiceDate = DateTime.Now,
+            CreatedDate = DateTime.Now,
+            PaymentDueDate = DateTime.Now,
+            InvoiceDetails = new List<InvoiceDetails>()
+        };
+    private InvoiceDetails currentDetail = new InvoiceDetails();
+    private List<Category> categories = new List<Category>();
+    private bool isLoading = true;
+    private bool hasError = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            categories = await CategoryService.GetCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AddNewInvoiceDetail()
+    {
+        currentDetail = new InvoiceDetails();
+        JSRuntime.InvokeVoidAsync("ShowInvoiceDetailModal");
+    }
+
+    private void EditInvoiceDetail(InvoiceDetails detail)
+    {
+        currentDetail = detail;
+        JSRuntime.InvokeVoidAsync("ShowInvoiceDetailModal");
+    }
+
+    private void RemoveInvoiceDetail(InvoiceDetails detail)
+    {
+        invoice.InvoiceDetails.Remove(detail);
+    }
+
+    private async Task SaveDetail()
+    {
+        if (!invoice.InvoiceDetails.Contains(currentDetail))
+        {
+            invoice.InvoiceDetails.Add(currentDetail);
+        }
+        JSRuntime.InvokeVoidAsync("HideInvoiceDetailModal");
+    }
+
+    private void HideModal()
+    {
+        JSRuntime.InvokeVoidAsync("HideInvoiceDetailModal");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (invoice.InvoiceDetails != null)
+        {
+            foreach (var invoiceDetails in invoice.InvoiceDetails)
+            {
+                invoiceDetails.LineTotal = invoiceDetails.UnitPrice * invoiceDetails.Quantity;
+            }
+        }
+        invoice.Category = categories.FirstOrDefault(i => i.CategoryID == invoice.CategoryID);
+        await InvoiceService.SaveSpInvoiceAsync(invoice);
+        NavigationManager.NavigateTo("/invoices");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/invoices");
+    }
+    private void DeleteDetail()
+    {
+        invoice.InvoiceDetails.Remove(currentDetail);
+        JSRuntime.InvokeVoidAsync("HideInvoiceDetailModal");
+    }
+}
+
+<style>
+    .container {
+        max-width: 900px;
+    }
+
+    .invoice-card {
+        border: 1px solid #007bff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .invoice-card-body {
+        padding: 20px;
+    }
+
+    .section-title {
+        margin-bottom: 20px;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .form-row.custom-form-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .form-group.col-66 {
+        flex: 0 0 66%;
+        max-width: 66%;
+    }
+
+    .form-group.col-33 {
+        flex: 0 0 33%;
+        max-width: 33%;
+    }
+
+    .border-divider {
+        border-top: 2px solid #007bff;
+        margin: 20px 0;
+    }
+
+    .table-bordered {
+        border: 1px solid #007bff;
+    }
+
+        .table-bordered th,
+        .table-bordered td {
+            border: 1px solid #007bff;
+        }
+
+    .button-row .btn {
+        margin-left: 5px;
+    }
+
+        .button-row .btn:first-child {
+            margin-left: 0;
+        }
+
+    .edit-btn {
+        background-color: #ffc107;
+        color: #fff;
+    }
+
+    .remove-btn {
+        background-color: #dc3545;
+        color: #fff;
+    }
+</style>

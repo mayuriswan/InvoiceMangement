@@ -56,7 +56,19 @@ namespace InvoiceMangement.Api.Controllers
             await _repository.AddAsync(invoice);
             return CreatedAtAction(nameof(Get), new { id = invoice.InvoiceID }, invoice);
         }
-
+        [HttpPost("save")]
+        public async Task<IActionResult> SaveInvoice([FromBody] Invoice invoice)
+        {
+            try
+            {
+                await _repository.SaveInvoiceAsync(invoice);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
         // Update an existing invoice
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, Invoice invoice)
