@@ -48,7 +48,10 @@ else
                     <td>@invoice.PaymentDueDate.ToShortDateString()</td>
                     <td>@invoice.CreatedDate.ToShortDateString()</td>
                     <td>
+                        <button class="btn btn-secondary mr-2" @onclick="() => EditInvoice(invoice.InvoiceID)">Edit</button>
                         <button class="btn btn-info mr-2" @onclick="() => ViewInvoiceDetails(invoice.InvoiceNumber, invoice.InvoiceDate)">View</button>
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteConfirmation(invoice.InvoiceID)">Delete</button>
+
                     </td>
                 </tr>
             }
@@ -99,7 +102,7 @@ else
 
     private void EditInvoice(int invoiceId)
     {
-        NavigationManager.NavigateTo($"/edit-invoice/{invoiceId}");
+        NavigationManager.NavigateTo($"/edit-invoice-sp/{invoiceId}");
     }
 
     private void ViewInvoiceDetails(string invoiceNumber, DateTime invoiceDate)
