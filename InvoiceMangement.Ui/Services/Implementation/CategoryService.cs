@@ -1,4 +1,4 @@
-﻿using InvoiceMangement.Api.Models;
+﻿using InvoiceMangement.Shared.Models;
 using InvoiceMangement.Ui.Services.Interfaces;
 
 namespace InvoiceMangement.Ui.Services.Implementation

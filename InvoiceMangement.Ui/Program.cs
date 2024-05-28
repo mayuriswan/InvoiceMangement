@@ -1,5 +1,4 @@
-using InvoiceMangement.Api.Repository.Implementation;
-using InvoiceMangement.Api.Repository.Interface;
+
 using InvoiceMangement.Ui;
 using InvoiceMangement.Ui.Services.Implementation;
 using InvoiceMangement.Ui.Services.Interfaces;
